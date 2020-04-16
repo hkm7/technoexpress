@@ -1,8 +1,10 @@
 from app import app
 from flask import render_template
+import sqlite3
 
 @app.route('/')
 def login():
+    
     return render_template('login.html')
 
 @app.route('/signup') 
