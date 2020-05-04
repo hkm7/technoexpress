@@ -69,16 +69,11 @@ span.psw {
 <body>
 
 <h2><center>Technoexpress login</center></h2>
-
-<form action="/app/routes.py" method="post">
-
-  <div class="container">
-    <label for="uname"><b>Username</b></label>
-    <input type="text" placeholder="Enter Username" name="uname" required>
-
-    <label for="psw"><b>Password</b></label>
-    <input type="password" placeholder="Enter Password" name="psw" required>
-        
+<div class="container">
+<form class="form-login" action="/app/login.py" method="POST">
+    {{ form.hidden_tag() }}
+    {{wtf.form_field(form.username) }}
+    {{wtf.form_field(form.password) }}
     <button type="submit">Login</button>
     
   </div>
