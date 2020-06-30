@@ -1,21 +1,16 @@
 from flask import Flask,render_template, redirect, request  
 from flask_wtf import FlaskForm
-from flaskext.mysql import MySQL
+import mysql.connector
+from mysql.connector import Error
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Length
 from passlib.hash import sha256_crypt
 
 app= Flask(__name__)
 app.config['SECRET_KEY'] = "mysecretkey"
-mysql = MySQL()
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = ''
-app.config['MYSQL_DATABASE_DB'] = 'technoexpress'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-mysql.init_app(app)
 
 try:
-    conn = mysql.connect()
+    conn = mysql.connector.connect(host='localhost', database='technoexpress', user='root',password='')
     link = conn.cursor()
 except:
     print("Error: Unable to connect to database!")
@@ -25,6 +20,11 @@ except:
 class LoginForm(FlaskForm):
     username = StringField('username', validators=[InputRequired(),Length(min=3,max=10)])
     password = PasswordField('password', validators=[InputRequired(),Length(min=8,max=20)])
+
+class SignUpForm(FlaskForm):
+    name = StringField('name', validators=[InputRequired()])
+    username = StringField('username', validators=[InputRequired(),Length(min=3,max=10)])
+    password = PasswordField('password', validators=[InputRequired(),Length(min=8,max=20)])    
 
 @app.route('/',  methods = ['GET','POST'])
 def root():
@@ -36,9 +36,10 @@ def signup():
 
 @app.route('/signup_process', methods=['POST'])
 def signup_process():
-    name = request.form[Name]
-    uname = request.form[username]
-    pwd = sha256_crypt.encrypt(request.form[password])
+    form = SignUpForm(request.form)
+    name = request.form[name]
+    uname = request.form[usr]
+    pwd = sha256_crypt.encrypt(request.form[pswd])
     try:
         link.execute("INSERT INTO userdata VALUES (NULL, "+name+", "+uname+", "+ pwd+");")
         return redirect('/home')
@@ -67,6 +68,11 @@ def login():
 
 @app.route('/home', methods = ['GET','POST']) 
 def home():
+    link.execute("SELECT * FROM blogdata")
+    result = link.fetchall()
+    numrows = len(result)
+    numcols = len(result[0])
+
     return render_template('home.html')        
 
 
