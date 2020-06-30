@@ -1,12 +1,26 @@
 from flask import Flask,render_template, redirect, request  
 from flask_wtf import FlaskForm
-from flask_sqlalchemy import SQLAlchemy
-import sqlite3
+from flaskext.mysql import MySQL
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Length
+from passlib.hash import sha256_crypt
 
 app= Flask(__name__)
-app.config['SECRET_KEY']= "thisismysecretkey"
+app.config['SECRET_KEY'] = "mysecretkey"
+mysql = MySQL()
+app.config['MYSQL_DATABASE_USER'] = 'root'
+app.config['MYSQL_DATABASE_PASSWORD'] = ''
+app.config['MYSQL_DATABASE_DB'] = 'technoexpress'
+app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+mysql.init_app(app)
+
+try:
+    conn = mysql.connect()
+    link = conn.cursor()
+except:
+    print("Error: Unable to connect to database!")
+    
+
 
 class LoginForm(FlaskForm):
     username = StringField('username', validators=[InputRequired(),Length(min=3,max=10)])
@@ -22,16 +36,30 @@ def signup():
 
 @app.route('/signup_process', methods=['POST'])
 def signup_process():
-    name = request.form[name]
-    username = request.form[username]
-    password = request.form[password]
-    return redirect('/home')
+    name = request.form[Name]
+    uname = request.form[username]
+    pwd = sha256_crypt.encrypt(request.form[password])
+    try:
+        link.execute("INSERT INTO userdata VALUES (NULL, "+name+", "+uname+", "+ pwd+");")
+        return redirect('/home')
+    except:
+        print("Error username needs to be unique")
+    
 
 @app.route('/login_process', methods=['POST'])
 def login_process():
-    username = request.form[uname]
-    password = request.form[psw]]
-    return redirect('/home')
+    form = LoginForm(request.form)
+    uname = request.form[username]
+    pwd = request.form[password]
+    try:
+        tmp = link.execute("SELECT pwd FROM userdata WHERE uname="+uname+";")
+        if(sha256_crypt.verify(pwd,tmp)):
+            print("Login Successful!")
+        else:
+            print("Login failed: Check username/password!")    
+    except:
+        print("Error: Unable to login right now, please try again later")
+        return redirect('/home')
 
 @app.route('/login', methods = ['GET','POST']) 
 def login():
