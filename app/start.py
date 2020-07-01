@@ -70,10 +70,8 @@ def login():
 def home():
     link.execute("SELECT * FROM blogdata")
     result = link.fetchall()
-    numrows = len(result)
-    numcols = len(result[0])
-
-    return render_template('home.html')        
+    numrows = len(result)    
+    return render_template('home.html', x=numrows,res=result)        
 
 
 
